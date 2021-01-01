@@ -15,6 +15,7 @@ Made available under GNU GENERAL PUBLIC LICENSE
 #
 import smbus
 from time import *
+import os
 
 class i2c_device:
    def __init__(self, addr, port=1):
@@ -51,8 +52,30 @@ class i2c_device:
 
 
 # LCD Address
-ADDRESS = 0x27
+#ADDRESS = 0x27
+"""SimpleLCD - An extension of Denis Pleic's RPi_I2C_driver"""
+"""-- Automatic I2C Address detection implemented by alexcarr1113 --"""
+"""01/01/2021"""
 
+print("Initialising SimpleLCD...")
+stream = os.popen('i2cdetect -y 1')
+output = stream.readlines()
+output.remove(output[0])
+for r in range (0, len(output)): #each row
+    row = output[r]
+    for c in range (0, len(output[r])): #each character of row
+        letter = row[c]
+        if letter not in [':', '-'] and letter.isspace() == False: #letter is not a colon, dash or space
+            if c+1 != len(output[r]) and row[c+1] != ":": #next character is not colon
+                if c+2 != len(output[r]) and row[c+2] != ":": #character after next character is not a colon
+                    adr = [letter, row[c+1]]
+                    adr = ''.join(adr)
+                    break
+ADDRESS = int("0x" + adr, 16)
+
+
+"""--"""
+    
 # commands
 LCD_CLEARDISPLAY = 0x01
 LCD_RETURNHOME = 0x02
@@ -99,9 +122,10 @@ En = 0b00000100 # Enable bit
 Rw = 0b00000010 # Read/Write bit
 Rs = 0b00000001 # Register select bit
 
+
 class lcd:
    #initializes objects and lcd
-   def __init__(self):
+   def __init__(self):  
       self.lcd_device = i2c_device(ADDRESS)
 
       self.lcd_write(0x03)
@@ -140,7 +164,7 @@ class lcd:
   
 
    # put string function
-   def lcd_display_string(self, string, line):
+   def write(self, string, line=1):
       if line == 1:
          self.lcd_write(0x80)
       if line == 2:
@@ -154,7 +178,7 @@ class lcd:
          self.lcd_write(ord(char), Rs)
 
    # clear lcd and set to home
-   def lcd_clear(self):
+   def clear(self):
       self.lcd_write(LCD_CLEARDISPLAY)
       self.lcd_write(LCD_RETURNHOME)
 
@@ -173,7 +197,7 @@ class lcd:
             self.lcd_write_char(line)         
          
    # define precise positioning (addition from the forum)
-   def lcd_display_string_pos(self, string, line, pos):
+   def writepos(self, string, line, pos):
     if line == 1:
       pos_new = pos
     elif line == 2:
@@ -187,3 +211,9 @@ class lcd:
 
     for char in string:
       self.lcd_write(ord(char), Rs)
+
+
+
+
+
+    
