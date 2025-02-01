@@ -1,4 +1,4 @@
-# SimpleLCD by Alex Carr - https://github.com/alexcarr1113
+# SimpleLCD
  An extension to Denis Pleic's I2C LCD library with the goal of being completely plug and play.
 
  First Time Setup:
